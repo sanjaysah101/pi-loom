@@ -2,6 +2,8 @@
 
 Pi Loom is an AI-powered music composer that transforms the digits of π into harmonious musical patterns. This project was created for the π-Day AI Hackathon 2025.
 
+![Pi Loom Screenshot](public/screenshot.png)
+
 ## Features
 
 - **π-Based Composition**: Converts π's digits into musical notes based on scales and keys
@@ -9,6 +11,15 @@ Pi Loom is an AI-powered music composer that transforms the digits of π into ha
 - **Harmony Generation**: Creates complementary harmonies based on the main melody
 - **Interactive Visualization**: Visualizes the note frequencies and detected patterns
 - **Customizable Parameters**: Adjust tempo, key, scale, and AI enhancement settings
+- **3D Visualization**: Interactive 3D representation of π on the landing page
+
+## How It Works
+
+1. **Digit to Note Conversion**: Each digit of π is mapped to a note in the selected musical scale
+2. **Pattern Detection**: The AI analyzes the sequence to find repeating patterns
+3. **Melody Enhancement**: Based on detected patterns, the AI can enhance the melody
+4. **Harmony Generation**: Optional harmonies can be generated to complement the main melody
+5. **Interactive Playback**: Users can play the composition with various waveforms and tempos
 
 ## Technical Implementation
 
@@ -19,14 +30,7 @@ Pi Loom uses several technologies:
 - **Chart.js**: For visualizing note frequencies
 - **AI Pattern Recognition**: Custom algorithm to detect patterns in π's digits
 - **Framer Motion**: For smooth animations
-
-## How It Works
-
-1. **Digit to Note Conversion**: Each digit of π is mapped to a note in the selected musical scale
-2. **Pattern Detection**: The AI analyzes the sequence to find repeating patterns
-3. **Melody Enhancement**: Based on detected patterns, the AI can enhance the melody
-4. **Harmony Generation**: Optional harmonies can be generated to complement the main melody
-5. **Interactive Playback**: Users can play the composition with various waveforms and tempos
+- **Three.js**: For 3D visualization of π on the landing page
 
 ## Getting Started
 

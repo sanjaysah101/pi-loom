@@ -25,6 +25,36 @@ import {
 
 Chart.register(...registerables);
 
+const scales: Record<string, number[]> = {
+  major: [0, 2, 4, 5, 7, 9, 11],
+  minor: [0, 2, 3, 5, 7, 8, 10],
+};
+
+const keys: Record<string, number> = {
+  C: 0,
+  D: 2,
+  E: 4,
+  F: 5,
+  G: 7,
+  A: 9,
+  B: 11,
+};
+
+const noteNames = [
+  'C',
+  'C#',
+  'D',
+  'D#',
+  'E',
+  'F',
+  'F#',
+  'G',
+  'G#',
+  'A',
+  'A#',
+  'B',
+];
+
 const PiComposer = () => {
   const [numDigits, setNumDigits] = useState(100);
   const [scale, setScale] = useState<'major' | 'minor'>('major');
@@ -45,36 +75,6 @@ const PiComposer = () => {
   const [useHarmony, setUseHarmony] = useState(false);
   const [aiResult, setAiResult] = useState<AICompositionResult | null>(null);
   const [activeHarmony, setActiveHarmony] = useState<number | null>(null);
-
-  const scales: Record<string, number[]> = {
-    major: [0, 2, 4, 5, 7, 9, 11],
-    minor: [0, 2, 3, 5, 7, 8, 10],
-  };
-
-  const keys: Record<string, number> = {
-    C: 0,
-    D: 2,
-    E: 4,
-    F: 5,
-    G: 7,
-    A: 9,
-    B: 11,
-  };
-
-  const noteNames = [
-    'C',
-    'C#',
-    'D',
-    'D#',
-    'E',
-    'F',
-    'F#',
-    'G',
-    'G#',
-    'A',
-    'A#',
-    'B',
-  ];
 
   const generateMusicFromPi = () => {
     const piStr = Math.PI.toString().replace('.', '').slice(0, numDigits);
@@ -138,10 +138,12 @@ const PiComposer = () => {
         audioContext.current.close();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     generateMusicFromPi();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [numDigits, scale, key, useAI, complexity, variation, useHarmony]);
 
   const getFrequency = (noteName: string) => {
@@ -228,11 +230,12 @@ const PiComposer = () => {
         borderColor: 'var(--chart-1)',
         backgroundColor: 'var(--chart-1)',
         fill: false,
-        pointBackgroundColor: (ctx: any) =>
+        pointBackgroundColor: (ctx: { dataIndex: number }) =>
           ctx.dataIndex === currentNoteIndex
             ? 'var(--destructive)'
             : 'var(--chart-1)',
-        pointRadius: (ctx: any) => (ctx.dataIndex === currentNoteIndex ? 8 : 4),
+        pointRadius: (ctx: { dataIndex: number }) =>
+          ctx.dataIndex === currentNoteIndex ? 8 : 4,
       },
       ...(aiResult?.patterns?.map((pattern, idx) => ({
         label: `Pattern ${idx + 1}`,
@@ -584,7 +587,8 @@ const PiComposer = () => {
                 {aiResult.patterns.length > 0 ? (
                   <>
                     <p>
-                      The AI has detected the following patterns in π's digits:
+                      The AI has detected the following patterns in π&apos;s
+                      digits:
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {aiResult.patterns.map((pattern, idx) => (

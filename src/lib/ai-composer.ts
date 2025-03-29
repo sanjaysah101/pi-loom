@@ -44,7 +44,7 @@ function detectPatterns(notes: string[]): Pattern[] {
     }
 
     // Find patterns that repeat
-    for (const [pattern, positions] of patternMap.entries()) {
+    for (const [, positions] of patternMap.entries()) {
       // We need at least 2 occurrences to have a repeating pattern
       if (positions.length >= 2) {
         // Calculate significance based on pattern length and number of repetitions
