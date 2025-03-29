@@ -23,8 +23,13 @@ interface Pattern {
 function detectPatterns(notes: string[]): Pattern[] {
   const patterns: Pattern[] = [];
 
-  // For various pattern lengths
-  for (let length = 3; length <= 8; length++) {
+  // Skip if we don't have enough notes to find patterns
+  if (notes.length < 10) {
+    return patterns;
+  }
+
+  // For various pattern lengths - start with smaller patterns which are more likely to repeat
+  for (let length = 2; length <= 5; length++) {
     const patternMap = new Map<string, number[]>();
 
     // Slide through the notes array
@@ -40,18 +45,52 @@ function detectPatterns(notes: string[]): Pattern[] {
 
     // Find patterns that repeat
     for (const [pattern, positions] of patternMap.entries()) {
-      if (positions.length > 1) {
+      // We need at least 2 occurrences to have a repeating pattern
+      if (positions.length >= 2) {
+        // Calculate significance based on pattern length and number of repetitions
+        const significance = Math.min(1, (positions.length * length) / 20);
+
         patterns.push({
           start: positions[0],
           length,
           repeats: positions.length,
-          significance: Math.min(1, (positions.length * length) / 50),
+          significance,
         });
       }
     }
   }
 
-  // Sort by significance
+  // If we still don't have patterns, create some artificial ones
+  // This ensures the AI enhancement still has something to work with
+  if (patterns.length === 0 && notes.length >= 10) {
+    // Find sections with similar notes (not exact matches)
+    for (let i = 0; i < notes.length - 5; i++) {
+      const section = notes.slice(i, i + 3);
+      let repeats = 0;
+
+      // Look for similar sections (containing at least one matching note)
+      for (let j = i + 3; j < notes.length - 2; j++) {
+        const compareSection = notes.slice(j, j + 3);
+        if (section.some((note) => compareSection.includes(note))) {
+          repeats++;
+        }
+      }
+
+      if (repeats >= 2) {
+        patterns.push({
+          start: i,
+          length: 3,
+          repeats: repeats + 1, // +1 to count the original occurrence
+          significance: Math.min(1, (repeats * 3) / 20),
+        });
+
+        // Skip ahead to avoid overlapping patterns
+        i += 2;
+      }
+    }
+  }
+
+  // Sort by significance and take the top 5
   return patterns.sort((a, b) => b.significance - a.significance).slice(0, 5);
 }
 
@@ -155,21 +194,21 @@ function enhanceMelody(
 
   // Apply variations based on the most significant patterns
   for (const pattern of patterns) {
-    if (Math.random() > 0.5) {
-      // Randomly choose to enhance this pattern
+    // Probability of applying enhancement increases with variation level
+    if (Math.random() < variation * 0.8) {
       const patternNotes = notes.slice(
         pattern.start,
         pattern.start + pattern.length
       );
 
       // Apply different enhancements based on pattern significance
-      if (pattern.significance > 0.7 && Math.random() < variation) {
+      if (pattern.significance > 0.7) {
         // For highly significant patterns, emphasize by repeating
         const insertPosition = Math.floor(
           Math.random() * (notes.length - pattern.length)
         );
         enhancedNotes.splice(insertPosition, 0, ...patternNotes);
-      } else if (pattern.significance > 0.4 && Math.random() < variation) {
+      } else if (pattern.significance > 0.4) {
         // For medium significance, modify slightly
         for (let i = 0; i < pattern.repeats; i++) {
           const pos = pattern.start + i * pattern.length;
@@ -178,14 +217,27 @@ function enhanceMelody(
             const note = enhancedNotes[pos];
             const noteName = note.slice(0, -1);
             const octave = parseInt(note.slice(-1));
-            enhancedNotes[pos] = `${noteName}${octave + 1}`;
+            enhancedNotes[pos] = `${noteName}${Math.min(octave + 1, 7)}`;
+          }
+        }
+      } else {
+        // For lower significance patterns, add subtle variations
+        for (let i = 0; i < pattern.length; i++) {
+          if (Math.random() < variation * 0.3) {
+            const pos = pattern.start + i;
+            if (pos < enhancedNotes.length) {
+              // Add slight emphasis by adjusting note duration (handled in playback)
+              // Mark this by adding an asterisk that will be removed before playback
+              enhancedNotes[pos] = enhancedNotes[pos] + '*';
+            }
           }
         }
       }
     }
   }
 
-  return enhancedNotes;
+  // Clean up any special markers before returning
+  return enhancedNotes.map((note) => note.replace('*', ''));
 }
 
 export function enhanceComposition(
@@ -200,8 +252,14 @@ export function enhanceComposition(
   const harmonies = harmony ? generateHarmonies(notes) : undefined;
 
   // Enhance the melody based on complexity and variation
+  // Complexity affects how many patterns we use
+  const patternsToUse =
+    complexity > 0
+      ? patterns.slice(0, Math.max(1, Math.floor(patterns.length * complexity)))
+      : [];
+
   const enhancedNotes =
-    complexity > 0 ? enhanceMelody(notes, patterns, variation) : notes;
+    complexity > 0 ? enhanceMelody(notes, patternsToUse, variation) : notes;
 
   return {
     enhancedNotes,

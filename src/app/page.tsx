@@ -110,15 +110,23 @@ const PiComposer = () => {
   };
 
   const applyAIEnhancement = (originalNotes: string[]) => {
+    // Stop playback if it's currently playing
+    if (playing) {
+      stopMusic();
+    }
+    
     const result = enhanceComposition({
       notes: originalNotes,
       complexity,
       harmony: useHarmony,
       variation,
     });
-
+  
     setAiResult(result);
     setNotes(result.enhancedNotes);
+    
+    // Reset current note index to ensure UI is in sync
+    setCurrentNoteIndex(-1);
   };
 
   useEffect(() => {
