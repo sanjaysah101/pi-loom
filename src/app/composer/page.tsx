@@ -67,8 +67,30 @@ const noteNames = [
   'B',
 ];
 
+// Add this utility function for Pi calculation outside the component
+// Using the Nilakantha series for better precision
+const calculatePiDigits = (digits: number): string => {
+  // For small number of digits, use built-in Math.PI
+  if (digits <= 15) {
+    return Math.PI.toString().slice(0, digits + 2); // +2 for "3."
+  }
+
+  // For larger numbers, use a more precise algorithm
+  let i = 1n;
+  let x = 3n * 10n ** BigInt(digits + 20);
+  let pi = x;
+  while (x > 0) {
+    x = (x * i) / ((i + 1n) * 4n);
+    pi += x / (i + 2n);
+    i += 2n;
+  }
+  return (pi / 10n ** BigInt(20)).toString().slice(0, digits + 2);
+};
+
+const MAX_PI_DIGITS = 100;
+
 const PiComposer = () => {
-  const [numDigits, setNumDigits] = useState(100);
+  const [numDigits, setNumDigits] = useState(20); // Reduced default for better performance
   const [scale, setScale] = useState<'major' | 'minor'>('major');
   const [key, setKey] = useState<string>('D');
   const [tempo, setTempo] = useState(120);
@@ -100,7 +122,7 @@ const PiComposer = () => {
     // Get the notes to export - use the same notes that are being played
     const notesToExport = notes;
     const harmonies = aiResult?.harmonies || [];
-    
+
     // Add notes to the track with proper timing
     notesToExport.forEach((note, index) => {
       const noteName = note.slice(0, -1);
@@ -132,7 +154,7 @@ const PiComposer = () => {
           velocity: 100,
         })
       );
-      
+
       // Add harmony notes if active
       if (
         activeHarmony !== null &&
@@ -142,8 +164,9 @@ const PiComposer = () => {
         const harmonyNote = harmonies[activeHarmony][index];
         const harmonyNoteName = harmonyNote.slice(0, -1);
         const harmonyOctave = parseInt(harmonyNote.slice(-1));
-        const harmonyMidiNote = (harmonyOctave + 1) * 12 + noteMap[harmonyNoteName];
-        
+        const harmonyMidiNote =
+          (harmonyOctave + 1) * 12 + noteMap[harmonyNoteName];
+
         // Add harmony note with slight delay for arpeggio effect
         track.addEvent(
           new MidiWriter.NoteEvent({
@@ -170,9 +193,15 @@ const PiComposer = () => {
     );
   };
 
+  console.log({ numDigits, piDigits });
+  console.log({ numDigits, piDigits });
   const generateMusicFromPi = () => {
-    const piStr = Math.PI.toString().replace('.', '').slice(0, numDigits);
-    setPiDigits(Math.PI.toString().slice(0, numDigits + 2)); // +2 for "3."
+    // Use our custom Pi calculation function
+    const fullPiStr = calculatePiDigits(numDigits);
+    setPiDigits(fullPiStr);
+
+    // Remove decimal point for note generation
+    const piStr = fullPiStr.replace('.', '').slice(1, numDigits + 1);
     const generatedNotes: string[] = [];
 
     if (!(scale in scales) || !(key in keys)) {
@@ -238,7 +267,7 @@ const PiComposer = () => {
   useEffect(() => {
     generateMusicFromPi();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [numDigits, scale, key, useAI, complexity, variation, useHarmony]);
+  }, [numDigits, scale, key, useAI, complexity, variation, useHarmony, tempo]);
 
   const getFrequency = (noteName: string) => {
     const octave = parseInt(noteName.slice(-1));
@@ -390,9 +419,9 @@ const PiComposer = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen">
       {/* Sidebar */}
-      <div className="w-80 border-r p-4 overflow-y-auto">
+      <div className="w-80 border-r p-4">
         <div className="mb-6">
           <h1 className="text-2xl font-bold mb-2">Pi Loom</h1>
           <p className="text-sm text-muted-foreground">
@@ -418,12 +447,16 @@ const PiComposer = () => {
                   <Slider
                     value={[numDigits]}
                     min={10}
-                    max={500}
+                    max={MAX_PI_DIGITS}
                     step={10}
                     onValueChange={(value) => setNumDigits(value[0])}
                   />
                   <span className="w-12 text-center">{numDigits}</span>
                 </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Using {numDigits > 15 ? 'custom algorithm' : 'Math.PI'} for
+                  calculation
+                </p>
               </div>
 
               <div>
@@ -565,7 +598,7 @@ const PiComposer = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 p-6">
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-xl">π Visualization</CardTitle>
