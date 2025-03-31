@@ -11,12 +11,16 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Card, CardContent, Slider } from './ui';
 import { Input } from './ui/input';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { Button } from './ui/button';
 
 // Define the interface for the ref methods
 export interface PiCanvasRef {
   updateColor: (color: string) => void;
   updateSize: (size: number) => void;
   updateRotationSpeed: (speed: number) => void;
+  pulseEffect: () => void; // New method
 }
 
 interface PiCanvasProps {
@@ -41,9 +45,15 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
     const sceneRef = useRef<THREE.Scene | null>(null);
     const controlsRef = useRef<OrbitControls | null>(null);
     const piMeshRef = useRef<THREE.Mesh | null>(null);
+    const frameIdRef = useRef<number | null>(null);
+    const lastTimeRef = useRef<number>(0);
     const [color, setColor] = useState(initialColor);
     const [size, setSize] = useState(initialSize);
     const [rotationSpeed, setRotationSpeed] = useState(initialRotationSpeed);
+    const isMobile = useIsMobile();
+    const [showControls, setShowControls] = useState(true);
+    const [isPulsing, setIsPulsing] = useState(false);
+    const fpsInterval = 1000 / 60; // Target 60 FPS
 
     // Function to update Pi model color
     const updateColor = (newColor: string) => {
@@ -68,11 +78,18 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
       setRotationSpeed(newSpeed);
     };
 
+    // Function to trigger a pulse effect
+    const pulseEffect = () => {
+      setIsPulsing(true);
+      setTimeout(() => setIsPulsing(false), 1000);
+    };
+
     // Properly expose control functions to parent components
     useImperativeHandle(ref, () => ({
       updateColor,
       updateSize,
       updateRotationSpeed,
+      pulseEffect,
     }));
 
     useEffect(() => {
@@ -91,10 +108,11 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
         canvas: canvasRef.current,
         alpha: true,
         antialias: true,
+        powerPreference: 'high-performance',
       });
 
       renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for better performance
 
       // Create a 3D Pi symbol using ExtrudeGeometry for depth
       const piShape = new THREE.Shape();
@@ -168,19 +186,19 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
       secondLight.position.set(-5, -5, 5);
       scene.add(secondLight);
 
-      // Position camera
-      camera.position.z = 5;
+      // Position camera - adjust for mobile
+      camera.position.z = isMobile ? 6 : 5;
 
       // Add OrbitControls for mouse interaction
       const controls = new OrbitControls(camera, renderer.domElement);
       controlsRef.current = controls;
 
-      // Configure controls
+      // Configure controls - adjust for mobile
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
-      controls.rotateSpeed = 0.8;
+      controls.rotateSpeed = isMobile ? 0.6 : 0.8; // Slower rotation on mobile
       controls.enableZoom = true;
-      controls.zoomSpeed = 0.5;
+      controls.zoomSpeed = isMobile ? 0.4 : 0.5;
       controls.minDistance = 3;
       controls.maxDistance = 10;
 
@@ -200,22 +218,43 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
       });
 
       // Animation loop
-      const animate = () => {
-        requestAnimationFrame(animate);
+      const animate = (timestamp: number) => {
+        frameIdRef.current = requestAnimationFrame(animate);
 
-        // Apply auto-rotation if enabled
-        if (autoRotate && piMesh) {
-          piMesh.rotation.y += rotationSpeed;
-          piMesh.rotation.x += rotationSpeed * 0.4;
+        // Calculate elapsed time since last frame
+        const elapsed = timestamp - lastTimeRef.current;
+
+        // Only render if enough time has passed
+        if (elapsed > fpsInterval) {
+          lastTimeRef.current = timestamp - (elapsed % fpsInterval);
+
+          // Apply auto-rotation if enabled
+          if (autoRotate && piMesh) {
+            piMesh.rotation.y += rotationSpeed;
+            piMesh.rotation.x += rotationSpeed * 0.4;
+          }
+
+          // Apply pulse effect if active
+          if (isPulsing && piMesh) {
+            const pulseScale = 1 + 0.2 * Math.sin(timestamp * 0.01);
+            piMesh.scale.set(
+              size * pulseScale,
+              size * pulseScale,
+              size * pulseScale
+            );
+          } else if (piMesh) {
+            piMesh.scale.set(size, size, size);
+          }
+
+          // Update controls
+          controls.update();
+
+          renderer.render(scene, camera);
         }
-
-        // Update controls
-        controls.update();
-
-        renderer.render(scene, camera);
       };
 
-      animate();
+      lastTimeRef.current = performance.now();
+      frameIdRef.current = requestAnimationFrame(animate);
 
       // Handle window resize
       const handleResize = () => {
@@ -224,65 +263,122 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       };
 
       window.addEventListener('resize', handleResize);
 
       return () => {
+        if (frameIdRef.current !== null) {
+          cancelAnimationFrame(frameIdRef.current);
+        }
         window.removeEventListener('resize', handleResize);
         controls.dispose();
         renderer.dispose();
         piGeometry.dispose();
         piMaterial.dispose();
       };
-    }, [color, size, initialRotationSpeed, rotationSpeed]);
+    }, [
+      color,
+      size,
+      initialRotationSpeed,
+      rotationSpeed,
+      isMobile,
+      isPulsing,
+      fpsInterval,
+    ]);
 
     return (
       <>
         <canvas ref={canvasRef} className={className} />
-        <Card className="fixed bottom-4 left-4 z-20 w-64">
-          <CardContent className="flex flex-col gap-4 p-4">
-            <div className="space-y-2">
-              <label className="text-xs font-medium">Model Color</label>
-              <Input
-                type="color"
-                value={color}
-                onChange={(e) => updateColor(e.target.value)}
-                className="h-8 cursor-pointer bg-transparent [&::-webkit-color-swatch]:rounded-md"
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <label className="text-xs font-medium">Model Size</label>
-                <span className="text-xs">{size.toFixed(1)}x</span>
+
+        {/* Toggle button for controls */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="fixed top-4 left-4 z-20 rounded-full w-8 h-8 p-0 backdrop-blur-sm bg-background/30"
+          onClick={() => setShowControls(!showControls)}
+        >
+          <span className="sr-only">Toggle controls</span>
+          {showControls ? '✕' : '⚙️'}
+        </Button>
+
+        {showControls && (
+          <Card
+            className={`fixed ${
+              isMobile ? 'bottom-2 left-2 w-56' : 'bottom-4 left-4 w-64'
+            } z-20`}
+          >
+            <CardContent className="flex flex-col gap-4 p-4">
+              <div className="space-y-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <label className="text-xs font-medium cursor-help">
+                      Model Color
+                    </label>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Change the color of the 3D Pi symbol
+                  </TooltipContent>
+                </Tooltip>
+                <Input
+                  type="color"
+                  value={color}
+                  onChange={(e) => updateColor(e.target.value)}
+                  className="h-8 cursor-pointer bg-transparent [&::-webkit-color-swatch]:rounded-md"
+                />
               </div>
-              <Slider
-                min={0.5}
-                max={2}
-                step={0.1}
-                value={[size]}
-                onValueChange={([value]) => updateSize(value)}
-                className="[&_.slider-thumb]:h-3 [&_.slider-thumb]:w-3"
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <label className="text-xs font-medium">Rotation Speed</label>
-                <span className="text-xs">
-                  {(rotationSpeed * 100).toFixed(0)}%
-                </span>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <label className="text-xs font-medium cursor-help">
+                        Model Size
+                      </label>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Adjust the size of the 3D Pi symbol
+                    </TooltipContent>
+                  </Tooltip>
+                  <span className="text-xs">{size.toFixed(1)}x</span>
+                </div>
+                <Slider
+                  min={0.5}
+                  max={2}
+                  step={0.1}
+                  value={[size]}
+                  onValueChange={([value]) => updateSize(value)}
+                  className="[&_.slider-thumb]:h-3 [&_.slider-thumb]:w-3"
+                />
               </div>
-              <Slider
-                min={0}
-                max={0.02}
-                step={0.001}
-                value={[rotationSpeed]}
-                onValueChange={([value]) => updateRotationSpeed(value)}
-                className="[&_.slider-thumb]:h-3 [&_.slider-thumb]:w-3"
-              />
-            </div>
-          </CardContent>
-        </Card>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <label className="text-xs font-medium cursor-help">
+                        Rotation Speed
+                      </label>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Control how fast the Pi symbol rotates
+                    </TooltipContent>
+                  </Tooltip>
+                  <span className="text-xs">
+                    {(rotationSpeed * 100).toFixed(0)}%
+                  </span>
+                </div>
+                <Slider
+                  min={0}
+                  max={0.02}
+                  step={0.001}
+                  value={[rotationSpeed]}
+                  onValueChange={([value]) => updateRotationSpeed(value)}
+                  className="[&_.slider-thumb]:h-3 [&_.slider-thumb]:w-3"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </>
     );
   }

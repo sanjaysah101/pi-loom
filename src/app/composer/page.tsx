@@ -22,12 +22,24 @@ import {
   enhanceComposition,
   type AICompositionResult,
 } from '@/lib/ai-composer';
+import { saveAs } from 'file-saver';
+import { PiCanvasRef } from '../../components/PiCanvas';
+import MidiWriter from 'midi-writer-js';
 
 Chart.register(...registerables);
 
+// Update the scales definition at the top of the file
 const scales: Record<string, number[]> = {
   major: [0, 2, 4, 5, 7, 9, 11],
   minor: [0, 2, 3, 5, 7, 8, 10],
+  pentatonic: [0, 2, 4, 7, 9],
+  blues: [0, 3, 5, 6, 7, 10],
+  chromatic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  dorian: [0, 2, 3, 5, 7, 9, 10],
+  phrygian: [0, 1, 3, 5, 7, 8, 10],
+  lydian: [0, 2, 4, 6, 7, 9, 11],
+  mixolydian: [0, 2, 4, 5, 7, 9, 10],
+  locrian: [0, 1, 3, 5, 6, 8, 10],
 };
 
 const keys: Record<string, number> = {
@@ -75,6 +87,88 @@ const PiComposer = () => {
   const [useHarmony, setUseHarmony] = useState(false);
   const [aiResult, setAiResult] = useState<AICompositionResult | null>(null);
   const [activeHarmony, setActiveHarmony] = useState<number | null>(null);
+  const piCanvasRef = useRef<PiCanvasRef>(null);
+
+  // Add this function to export MIDI
+  const exportMidi = () => {
+    // Create a new track
+    const track = new MidiWriter.Track();
+
+    // Define the tempo
+    track.setTempo(tempo);
+
+    // Get the notes to export - use the same notes that are being played
+    const notesToExport = notes;
+    const harmonies = aiResult?.harmonies || [];
+    
+    // Add notes to the track with proper timing
+    notesToExport.forEach((note, index) => {
+      const noteName = note.slice(0, -1);
+      const octave = parseInt(note.slice(-1));
+
+      // Convert note name to MIDI note number
+      const noteMap: Record<string, number> = {
+        C: 0,
+        'C#': 1,
+        D: 2,
+        'D#': 3,
+        E: 4,
+        F: 5,
+        'F#': 6,
+        G: 7,
+        'G#': 8,
+        A: 9,
+        'A#': 10,
+        B: 11,
+      };
+
+      const midiNote = (octave + 1) * 12 + noteMap[noteName];
+
+      // Add note event (quarter note duration)
+      track.addEvent(
+        new MidiWriter.NoteEvent({
+          pitch: [midiNote],
+          duration: '4',
+          velocity: 100,
+        })
+      );
+      
+      // Add harmony notes if active
+      if (
+        activeHarmony !== null &&
+        harmonies[activeHarmony] &&
+        harmonies[activeHarmony][index]
+      ) {
+        const harmonyNote = harmonies[activeHarmony][index];
+        const harmonyNoteName = harmonyNote.slice(0, -1);
+        const harmonyOctave = parseInt(harmonyNote.slice(-1));
+        const harmonyMidiNote = (harmonyOctave + 1) * 12 + noteMap[harmonyNoteName];
+        
+        // Add harmony note with slight delay for arpeggio effect
+        track.addEvent(
+          new MidiWriter.NoteEvent({
+            pitch: [harmonyMidiNote],
+            duration: '4',
+            velocity: 90, // Slightly quieter than the main note
+            sequential: true, // This makes it play after the previous note
+          })
+        );
+      }
+    });
+
+    // Generate the MIDI file
+    const write = new MidiWriter.Writer([track]);
+
+    // Create a Blob and save it
+    const midiBlob = new Blob([write.buildFile()], {
+      type: 'audio/midi',
+    });
+
+    saveAs(
+      midiBlob,
+      `pi-loom-composition-${new Date().toISOString().slice(0, 10)}.mid`
+    );
+  };
 
   const generateMusicFromPi = () => {
     const piStr = Math.PI.toString().replace('.', '').slice(0, numDigits);
@@ -168,6 +262,11 @@ const PiComposer = () => {
     gainNode.connect(audioContext.current.destination);
     oscillator.start(startTime);
     oscillator.stop(startTime + 0.5);
+
+    // Pulse the Pi symbol when the note starts playing
+    if (startTime === audioContext.current.currentTime) {
+      piCanvasRef.current?.pulseEffect();
+    }
   };
 
   const playMusic = async () => {
@@ -255,29 +354,37 @@ const PiComposer = () => {
     ],
   };
 
-  // Function to highlight the current digit in π
+  // Enhance the renderPiDigits function
   const renderPiDigits = () => {
     if (!piDigits) return null;
 
     return (
-      <div className="pi-visualization font-mono text-lg overflow-x-auto whitespace-nowrap pb-2">
-        {piDigits.split('').map((digit, index) => {
-          const isCurrentDigit = index === currentNoteIndex + 2; // +2 to account for "3."
-          const isDecimalPoint = digit === '.';
+      <div className="pi-visualization font-mono text-sm overflow-x-auto whitespace-nowrap pb-2 max-h-32 overflow-y-auto">
+        <div className="grid grid-cols-10 gap-1">
+          {piDigits.split('').map((digit, index) => {
+            const isCurrentDigit = index === currentNoteIndex + 2; // +2 to account for "3."
+            const isDecimalPoint = digit === '.';
+            const noteIndex = index - 2; // Adjust for "3."
+            const note =
+              noteIndex >= 0 && noteIndex < notes.length
+                ? notes[noteIndex]
+                : null;
 
-          return (
-            <span
-              key={index}
-              className={`inline-block px-1 ${
-                isCurrentDigit
-                  ? 'bg-primary text-primary-foreground rounded-md'
-                  : ''
-              } ${isDecimalPoint ? 'text-primary font-bold' : ''}`}
-            >
-              {digit}
-            </span>
-          );
-        })}
+            return (
+              <div
+                key={index}
+                className={`relative flex flex-col items-center justify-center p-1 rounded-md ${
+                  isCurrentDigit
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted'
+                } ${isDecimalPoint ? 'text-primary font-bold' : ''}`}
+              >
+                <span className="text-lg">{digit}</span>
+                {note && <span className="text-xs opacity-70">{note}</span>}
+              </div>
+            );
+          })}
+        </div>
       </div>
     );
   };
@@ -291,6 +398,12 @@ const PiComposer = () => {
           <p className="text-sm text-muted-foreground">
             AI Music Composer based on π
           </p>
+          <div className="mt-6 space-y-4">
+            <h2 className="text-lg font-medium mb-2">Export</h2>
+            <Button onClick={exportMidi} className="w-full" variant="outline">
+              Export as MIDI
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-6">
