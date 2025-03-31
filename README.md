@@ -2,7 +2,8 @@
 
 Pi Loom is an AI-powered music composer that transforms the digits of π into harmonious musical patterns. This project was created for the π-Day AI Hackathon 2025.
 
-![Pi Loom Screenshot](public/screenshot.png)
+![Pi Loom Screenshot](public/pi-loom-home-page.png)
+![Pi Loom Screenshot](public/pi-composer.png)
 
 ## Features
 
