@@ -34,7 +34,7 @@ function detectPatterns(notes: string[]): Pattern[] {
 
     // Slide through the notes array
     for (let i = 0; i <= notes.length - length; i++) {
-      const pattern = notes.slice(i, i + length).join(',');
+      const pattern = notes.slice(i, i + length).join(",");
 
       if (!patternMap.has(pattern)) {
         patternMap.set(pattern, []);
@@ -105,35 +105,11 @@ function generateHarmonies(notes: string[]): string[][] {
 
     // This is a simplified approach - in a real app, you'd use music theory
     // to determine the correct third based on the scale
-    const noteIndex = [
-      'C',
-      'C#',
-      'D',
-      'D#',
-      'E',
-      'F',
-      'F#',
-      'G',
-      'G#',
-      'A',
-      'A#',
-      'B',
-    ].indexOf(noteName);
+    const noteIndex = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"].indexOf(
+      noteName
+    );
     const thirdIndex = (noteIndex + 4) % 12; // Perfect third
-    const thirdName = [
-      'C',
-      'C#',
-      'D',
-      'D#',
-      'E',
-      'F',
-      'F#',
-      'G',
-      'G#',
-      'A',
-      'A#',
-      'B',
-    ][thirdIndex];
+    const thirdName = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"][thirdIndex];
 
     return `${thirdName}${octave}`;
   });
@@ -143,35 +119,11 @@ function generateHarmonies(notes: string[]): string[][] {
     const noteName = note.slice(0, -1);
     const octave = parseInt(note.slice(-1));
 
-    const noteIndex = [
-      'C',
-      'C#',
-      'D',
-      'D#',
-      'E',
-      'F',
-      'F#',
-      'G',
-      'G#',
-      'A',
-      'A#',
-      'B',
-    ].indexOf(noteName);
+    const noteIndex = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"].indexOf(
+      noteName
+    );
     const fifthIndex = (noteIndex + 7) % 12; // Perfect fifth
-    const fifthName = [
-      'C',
-      'C#',
-      'D',
-      'D#',
-      'E',
-      'F',
-      'F#',
-      'G',
-      'G#',
-      'A',
-      'A#',
-      'B',
-    ][fifthIndex];
+    const fifthName = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"][fifthIndex];
 
     return `${fifthName}${octave}`;
   });
@@ -183,11 +135,7 @@ function generateHarmonies(notes: string[]): string[][] {
 }
 
 // Enhance the melody based on detected patterns
-function enhanceMelody(
-  notes: string[],
-  patterns: Pattern[],
-  variation: number
-): string[] {
+function enhanceMelody(notes: string[], patterns: Pattern[], variation: number): string[] {
   if (variation === 0) return notes;
 
   const enhancedNotes = [...notes];
@@ -196,17 +144,12 @@ function enhanceMelody(
   for (const pattern of patterns) {
     // Probability of applying enhancement increases with variation level
     if (Math.random() < variation * 0.8) {
-      const patternNotes = notes.slice(
-        pattern.start,
-        pattern.start + pattern.length
-      );
+      const patternNotes = notes.slice(pattern.start, pattern.start + pattern.length);
 
       // Apply different enhancements based on pattern significance
       if (pattern.significance > 0.7) {
         // For highly significant patterns, emphasize by repeating
-        const insertPosition = Math.floor(
-          Math.random() * (notes.length - pattern.length)
-        );
+        const insertPosition = Math.floor(Math.random() * (notes.length - pattern.length));
         enhancedNotes.splice(insertPosition, 0, ...patternNotes);
       } else if (pattern.significance > 0.4) {
         // For medium significance, modify slightly
@@ -228,7 +171,7 @@ function enhanceMelody(
             if (pos < enhancedNotes.length) {
               // Add slight emphasis by adjusting note duration (handled in playback)
               // Mark this by adding an asterisk that will be removed before playback
-              enhancedNotes[pos] = enhancedNotes[pos] + '*';
+              enhancedNotes[pos] = enhancedNotes[pos] + "*";
             }
           }
         }
@@ -237,12 +180,10 @@ function enhanceMelody(
   }
 
   // Clean up any special markers before returning
-  return enhancedNotes.map((note) => note.replace('*', ''));
+  return enhancedNotes.map((note) => note.replace("*", ""));
 }
 
-export function enhanceComposition(
-  options: AICompositionOptions
-): AICompositionResult {
+export function enhanceComposition(options: AICompositionOptions): AICompositionResult {
   const { notes, complexity, harmony, variation } = options;
 
   // Detect patterns in the original melody
@@ -254,12 +195,9 @@ export function enhanceComposition(
   // Enhance the melody based on complexity and variation
   // Complexity affects how many patterns we use
   const patternsToUse =
-    complexity > 0
-      ? patterns.slice(0, Math.max(1, Math.floor(patterns.length * complexity)))
-      : [];
+    complexity > 0 ? patterns.slice(0, Math.max(1, Math.floor(patterns.length * complexity))) : [];
 
-  const enhancedNotes =
-    complexity > 0 ? enhanceMelody(notes, patternsToUse, variation) : notes;
+  const enhancedNotes = complexity > 0 ? enhanceMelody(notes, patternsToUse, variation) : notes;
 
   return {
     enhancedNotes,

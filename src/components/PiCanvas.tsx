@@ -1,19 +1,16 @@
-'use client';
+"use client";
 
-import React, {
-  useEffect,
-  useRef,
-  useState,
-  forwardRef,
-  useImperativeHandle,
-} from 'react';
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { Card, CardContent, Slider } from './ui';
-import { Input } from './ui/input';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { Button } from './ui/button';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+
+import { useIsMobile } from "@/hooks/use-mobile";
+
+import { Card, CardContent, Slider } from "./ui";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 // Define the interface for the ref methods
 export interface PiCanvasRef {
@@ -32,15 +29,7 @@ interface PiCanvasProps {
 
 // Use forwardRef to properly handle the ref
 export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
-  (
-    {
-      className,
-      initialColor = '#3b82f6',
-      initialSize = 1,
-      initialRotationSpeed = 0.005,
-    },
-    ref
-  ) => {
+  ({ className, initialColor = "#3b82f6", initialSize = 1, initialRotationSpeed = 0.005 }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const sceneRef = useRef<THREE.Scene | null>(null);
     const controlsRef = useRef<OrbitControls | null>(null);
@@ -59,9 +48,7 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
     const updateColor = (newColor: string) => {
       setColor(newColor);
       if (piMeshRef.current) {
-        (piMeshRef.current.material as THREE.MeshStandardMaterial).color.set(
-          newColor
-        );
+        (piMeshRef.current.material as THREE.MeshStandardMaterial).color.set(newColor);
       }
     };
 
@@ -108,7 +95,7 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
         canvas: canvasRef.current,
         alpha: true,
         antialias: true,
-        powerPreference: 'high-performance',
+        powerPreference: "high-performance",
       });
 
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -206,12 +193,12 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
       let autoRotate = true;
 
       // Disable auto-rotation when user interacts
-      controls.addEventListener('start', () => {
+      controls.addEventListener("start", () => {
         autoRotate = false;
       });
 
       // Re-enable auto-rotation after a delay when user stops interacting
-      controls.addEventListener('end', () => {
+      controls.addEventListener("end", () => {
         setTimeout(() => {
           autoRotate = true;
         }, 3000);
@@ -237,11 +224,7 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
           // Apply pulse effect if active
           if (isPulsing && piMesh) {
             const pulseScale = 1 + 0.2 * Math.sin(timestamp * 0.01);
-            piMesh.scale.set(
-              size * pulseScale,
-              size * pulseScale,
-              size * pulseScale
-            );
+            piMesh.scale.set(size * pulseScale, size * pulseScale, size * pulseScale);
           } else if (piMesh) {
             piMesh.scale.set(size, size, size);
           }
@@ -266,27 +249,19 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       };
 
-      window.addEventListener('resize', handleResize);
+      window.addEventListener("resize", handleResize);
 
       return () => {
         if (frameIdRef.current !== null) {
           cancelAnimationFrame(frameIdRef.current);
         }
-        window.removeEventListener('resize', handleResize);
+        window.removeEventListener("resize", handleResize);
         controls.dispose();
         renderer.dispose();
         piGeometry.dispose();
         piMaterial.dispose();
       };
-    }, [
-      color,
-      size,
-      initialRotationSpeed,
-      rotationSpeed,
-      isMobile,
-      isPulsing,
-      fpsInterval,
-    ]);
+    }, [color, size, initialRotationSpeed, rotationSpeed, isMobile, isPulsing, fpsInterval]);
 
     return (
       <>
@@ -300,26 +275,20 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
           onClick={() => setShowControls(!showControls)}
         >
           <span className="sr-only">Toggle controls</span>
-          {showControls ? '✕' : '⚙️'}
+          {showControls ? "✕" : "⚙️"}
         </Button>
 
         {showControls && (
           <Card
-            className={`fixed ${
-              isMobile ? 'bottom-2 left-2 w-56' : 'bottom-4 left-4 w-64'
-            } z-20`}
+            className={`fixed ${isMobile ? "bottom-2 left-2 w-56" : "bottom-4 left-4 w-64"} z-20`}
           >
             <CardContent className="flex flex-col gap-4 p-4">
               <div className="space-y-2">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <label className="text-xs font-medium cursor-help">
-                      Model Color
-                    </label>
+                    <label className="text-xs font-medium cursor-help">Model Color</label>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    Change the color of the 3D Pi symbol
-                  </TooltipContent>
+                  <TooltipContent>Change the color of the 3D Pi symbol</TooltipContent>
                 </Tooltip>
                 <Input
                   type="color"
@@ -332,13 +301,9 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
                 <div className="flex justify-between">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <label className="text-xs font-medium cursor-help">
-                        Model Size
-                      </label>
+                      <label className="text-xs font-medium cursor-help">Model Size</label>
                     </TooltipTrigger>
-                    <TooltipContent>
-                      Adjust the size of the 3D Pi symbol
-                    </TooltipContent>
+                    <TooltipContent>Adjust the size of the 3D Pi symbol</TooltipContent>
                   </Tooltip>
                   <span className="text-xs">{size.toFixed(1)}x</span>
                 </div>
@@ -355,17 +320,11 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
                 <div className="flex justify-between">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <label className="text-xs font-medium cursor-help">
-                        Rotation Speed
-                      </label>
+                      <label className="text-xs font-medium cursor-help">Rotation Speed</label>
                     </TooltipTrigger>
-                    <TooltipContent>
-                      Control how fast the Pi symbol rotates
-                    </TooltipContent>
+                    <TooltipContent>Control how fast the Pi symbol rotates</TooltipContent>
                   </Tooltip>
-                  <span className="text-xs">
-                    {(rotationSpeed * 100).toFixed(0)}%
-                  </span>
+                  <span className="text-xs">{(rotationSpeed * 100).toFixed(0)}%</span>
                 </div>
                 <Slider
                   min={0}
@@ -384,5 +343,4 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
   }
 );
 
-// Add display name to fix the ESLint error
-PiCanvas.displayName = 'PiCanvas';
+PiCanvas.displayName = "PiCanvas";

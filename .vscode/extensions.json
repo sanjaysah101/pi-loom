@@ -1,0 +1,23 @@
+{
+  "recommendations": [
+    // Essential for this project
+    "biomejs.biome",
+    "bradlc.vscode-tailwindcss",
+
+    // Next.js and React development
+    "dsznajder.es7-react-js-snippets",
+
+    // Git and version control
+    "eamodio.gitlens",
+
+    // Utilities
+    "usernamehw.errorlens",
+    "christian-kohler.path-intellisense",
+    "formulahendry.auto-rename-tag",
+    "yoavbls.pretty-ts-errors"
+  ],
+  "unwantedRecommendations": [
+    // Disable Prettier to avoid conflicts with Biome
+    "esbenp.prettier-vscode"
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "dev",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: dev",
+      "detail": "next dev"
+    },
+    {
+      "type": "npm",
+      "script": "build",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: build",
+      "detail": "next build"
+    },
+    {
+      "type": "npm",
+      "script": "start",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: start",
+      "detail": "next start"
+    },
+    {
+      "type": "npm",
+      "script": "lint",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: lint",
+      "detail": "biome check"
+    },
+    {
+      "type": "npm",
+      "script": "lint:fix",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: lint:fix",
+      "detail": "biome check --write"
+    },
+    {
+      "type": "npm",
+      "script": "lint:unsafe",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: lint:unsafe",
+      "detail": "biome check --write --unsafe"
+    },
+    {
+      "type": "npm",
+      "script": "format",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: format",
+      "detail": "biome format --write"
+    }
+  ]
+}

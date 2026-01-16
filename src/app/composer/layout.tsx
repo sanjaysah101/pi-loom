@@ -1,10 +1,6 @@
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider } from "@/components/ui/sidebar";
 
-export default async function Layout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function Layout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full overflow-hidden bg-background">
