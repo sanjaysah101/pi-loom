@@ -172,8 +172,6 @@ const PiComposer = () => {
     saveAs(midiBlob, `pi-loom-composition-${new Date().toISOString().slice(0, 10)}.mid`);
   };
 
-  console.log({ numDigits, piDigits });
-  console.log({ numDigits, piDigits });
   const generateMusicFromPi = () => {
     // Use our custom Pi calculation function
     const fullPiStr = calculatePiDigits(numDigits);

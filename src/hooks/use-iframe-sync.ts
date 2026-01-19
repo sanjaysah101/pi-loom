@@ -1,42 +1,53 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+
+const OS_ORIGIN = process.env.NEXT_PUBLIC_OS_ORIGIN;
+
+type IframeRouterBridgeMessage = {
+  type: "URL_CHANGED";
+  payload: {
+    url: string;
+    pathname: string;
+    search: string;
+  };
+};
+
 /**
  * Hook to sync URL changes from a child Next.js app to a parent iframe host.
  * maintainer: Sanjay OS
- *
- * Usage:
- * 1. Copy this file to your child project (e.g., pi-loom)
- * 2. Import and call this hook in your root layout or top-level component.
- *
- * Example (src/app/layout.tsx):
- *
- * export default function RootLayout({ children }) {
- *   useIframeSync();
- *   return <html>...</html>
- * }
  */
 export function useIframeSync() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   useEffect(() => {
-    // 1. Check if we are actually running inside an iframe
-    const inIframe = window.parent !== window;
+    if (typeof window === "undefined") return;
+
+    // 1. Check if inside iframe
+    const inIframe = window.parent && window.parent !== window;
     if (!inIframe) return;
 
-    // 2. Construct the full current URL
-    // We use window.location.href to get the absolute URL including protocol/domain
-    const url = window.location.href;
-    console.log({url})
+    // 2. Validate OS origin
+    if (!OS_ORIGIN) {
+      console.warn("[useIframeSync] NEXT_PUBLIC_OS_ORIGIN is not defined. Falling back to '*'");
+    }
 
-    // 3. Send message to parent
+    // 3. Build URL
+    const url = window.location.href;
+
+    // 4. Send to parent
     window.parent.postMessage(
       {
         type: "URL_CHANGED",
-        url: url,
-      },
-      "*" // For production, replace "*" with your specific OS domain for better security
+        payload: {
+          url,
+          pathname,
+          search: searchParams.toString(),
+        },
+      } satisfies IframeRouterBridgeMessage,
+      OS_ORIGIN || "*"
     );
-
-    // Debug log (optional)
-    // console.log("Synced URL to parent:", url);
-  }, []);
+  }, [pathname, searchParams]);
 }
