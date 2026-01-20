@@ -23,7 +23,7 @@ const HomePage = () => {
             className="backdrop-blur-sm bg-background/30 p-8 rounded-xl shadow-lg border border-primary/10"
           >
             <motion.h1
-              className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600"
+              className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-linear-to-r from-blue-500 to-purple-600"
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               transition={{ duration: 1, delay: 0.2 }}

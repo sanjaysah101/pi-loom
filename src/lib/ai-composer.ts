@@ -1,3 +1,5 @@
+import { NOTE_NAMES } from "./constants";
+
 // AI-based pattern recognition and melody enhancement
 export interface AICompositionOptions {
   notes: string[];
@@ -105,11 +107,9 @@ function generateHarmonies(notes: string[]): string[][] {
 
     // This is a simplified approach - in a real app, you'd use music theory
     // to determine the correct third based on the scale
-    const noteIndex = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"].indexOf(
-      noteName
-    );
+    const noteIndex = NOTE_NAMES.indexOf(noteName);
     const thirdIndex = (noteIndex + 4) % 12; // Perfect third
-    const thirdName = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"][thirdIndex];
+    const thirdName = NOTE_NAMES[thirdIndex];
 
     return `${thirdName}${octave}`;
   });
@@ -119,11 +119,9 @@ function generateHarmonies(notes: string[]): string[][] {
     const noteName = note.slice(0, -1);
     const octave = parseInt(note.slice(-1), 10);
 
-    const noteIndex = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"].indexOf(
-      noteName
-    );
+    const noteIndex = NOTE_NAMES.indexOf(noteName);
     const fifthIndex = (noteIndex + 7) % 12; // Perfect fifth
-    const fifthName = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"][fifthIndex];
+    const fifthName = NOTE_NAMES[fifthIndex];
 
     return `${fifthName}${octave}`;
   });

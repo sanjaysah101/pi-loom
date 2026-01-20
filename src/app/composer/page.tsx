@@ -26,6 +26,7 @@ import { type AICompositionResult, enhanceComposition } from "@/lib/ai-composer"
 
 import type { PiCanvasRef } from "../../components/PiCanvas";
 import { Label } from "../../components/ui/label";
+import { NOTE_NAMES } from "../../lib/constants";
 
 Chart.register(...registerables);
 
@@ -52,8 +53,6 @@ const keys: Record<string, number> = {
   A: 9,
   B: 11,
 };
-
-const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
 // Add this utility function for Pi calculation outside the component
 // Using the Nilakantha series for better precision
@@ -225,7 +224,7 @@ const PiComposer = () => {
       const noteValue = scalePattern[noteIndex];
       const pitch = keyOffset + noteValue;
       const octave = 4 + Math.floor(digitInt / scalePattern.length);
-      const noteName = noteNames[pitch % 12] + octave;
+      const noteName = NOTE_NAMES[pitch % 12] + octave;
       generatedNotes.push(noteName);
     }
 
@@ -258,7 +257,7 @@ const PiComposer = () => {
 
   const getFrequency = (noteName: string) => {
     const octave = parseInt(noteName.slice(-1), 10);
-    const noteIndex = noteNames.indexOf(noteName.slice(0, -1));
+    const noteIndex = NOTE_NAMES.indexOf(noteName.slice(0, -1));
     return 440 * 2 ** ((noteIndex - 9) / 12 + (octave - 4));
   };
 
