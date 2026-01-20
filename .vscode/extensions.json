@@ -15,9 +15,5 @@
     "christian-kohler.path-intellisense",
     "formulahendry.auto-rename-tag",
     "yoavbls.pretty-ts-errors"
-  ],
-  "unwantedRecommendations": [
-    // Disable Prettier to avoid conflicts with Biome
-    "esbenp.prettier-vscode"
   ]
 }

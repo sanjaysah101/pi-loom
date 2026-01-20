@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Chart, type ChartData, registerables } from "chart.js";
 import { saveAs } from "file-saver";
@@ -25,6 +25,7 @@ import {
 import { type AICompositionResult, enhanceComposition } from "@/lib/ai-composer";
 
 import type { PiCanvasRef } from "../../components/PiCanvas";
+import { Label } from "../../components/ui/label";
 
 Chart.register(...registerables);
 
@@ -113,7 +114,7 @@ const PiComposer = () => {
     // Add notes to the track with proper timing
     notesToExport.forEach((note, index) => {
       const noteName = note.slice(0, -1);
-      const octave = parseInt(note.slice(-1));
+      const octave = parseInt(note.slice(-1), 10);
 
       // Convert note name to MIDI note number
       const noteMap: Record<string, number> = {
@@ -146,7 +147,7 @@ const PiComposer = () => {
       if (activeHarmony !== null && harmonies[activeHarmony] && harmonies[activeHarmony][index]) {
         const harmonyNote = harmonies[activeHarmony][index];
         const harmonyNoteName = harmonyNote.slice(0, -1);
-        const harmonyOctave = parseInt(harmonyNote.slice(-1));
+        const harmonyOctave = parseInt(harmonyNote.slice(-1), 10);
         const harmonyMidiNote = (harmonyOctave + 1) * 12 + noteMap[harmonyNoteName];
 
         // Add harmony note with slight delay for arpeggio effect
@@ -165,14 +166,43 @@ const PiComposer = () => {
     const write = new MidiWriter.Writer([track]);
 
     // Create a Blob and save it
-    const midiBlob = new Blob([write.buildFile()], {
+    const midiBlob = new Blob([write.buildFile() as BlobPart], {
       type: "audio/midi",
     });
 
     saveAs(midiBlob, `pi-loom-composition-${new Date().toISOString().slice(0, 10)}.mid`);
   };
 
-  const generateMusicFromPi = () => {
+  const stopMusic = useCallback(() => {
+    setPlaying(false);
+    playingRef.current = false;
+    setCurrentNoteIndex(-1);
+  }, []);
+
+  const applyAIEnhancement = useCallback(
+    (originalNotes: string[]) => {
+      // Stop playback if it's currently playing
+      if (playing) {
+        stopMusic();
+      }
+
+      const result = enhanceComposition({
+        notes: originalNotes,
+        complexity,
+        harmony: useHarmony,
+        variation,
+      });
+
+      setAiResult(result);
+      setNotes(result.enhancedNotes);
+
+      // Reset current note index to ensure UI is in sync
+      setCurrentNoteIndex(-1);
+    },
+    [complexity, playing, useHarmony, stopMusic, variation]
+  );
+
+  const generateMusicFromPi = useCallback(() => {
     // Use our custom Pi calculation function
     const fullPiStr = calculatePiDigits(numDigits);
     setPiDigits(fullPiStr);
@@ -190,7 +220,7 @@ const PiComposer = () => {
     const keyOffset = keys[key];
 
     for (const digit of piStr) {
-      const digitInt = parseInt(digit);
+      const digitInt = parseInt(digit, 10);
       const noteIndex = digitInt % scalePattern.length;
       const noteValue = scalePattern[noteIndex];
       const pitch = keyOffset + noteValue;
@@ -207,28 +237,9 @@ const PiComposer = () => {
     } else {
       setAiResult(null);
     }
-  };
+  }, [applyAIEnhancement, key, numDigits, scale, useAI]);
 
-  const applyAIEnhancement = (originalNotes: string[]) => {
-    // Stop playback if it's currently playing
-    if (playing) {
-      stopMusic();
-    }
-
-    const result = enhanceComposition({
-      notes: originalNotes,
-      complexity,
-      harmony: useHarmony,
-      variation,
-    });
-
-    setAiResult(result);
-    setNotes(result.enhancedNotes);
-
-    // Reset current note index to ensure UI is in sync
-    setCurrentNoteIndex(-1);
-  };
-
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Ignore
   useEffect(() => {
     generateMusicFromPi();
     audioContext.current = new AudioContext();
@@ -240,12 +251,13 @@ const PiComposer = () => {
     };
   }, []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Ignore
   useEffect(() => {
     generateMusicFromPi();
-  }, [numDigits, scale, key, useAI, complexity, variation, useHarmony, tempo]);
+  }, [numDigits, scale, key, useAI, complexity, variation, useHarmony, tempo, waveform]);
 
   const getFrequency = (noteName: string) => {
-    const octave = parseInt(noteName.slice(-1));
+    const octave = parseInt(noteName.slice(-1), 10);
     const noteIndex = noteNames.indexOf(noteName.slice(0, -1));
     return 440 * 2 ** ((noteIndex - 9) / 12 + (octave - 4));
   };
@@ -309,12 +321,6 @@ const PiComposer = () => {
     setCurrentNoteIndex(-1);
   };
 
-  const stopMusic = () => {
-    setPlaying(false);
-    playingRef.current = false;
-    setCurrentNoteIndex(-1);
-  };
-
   const chartData: ChartData = {
     labels: notes.map((_, i) => i + 1),
     datasets: [
@@ -360,6 +366,7 @@ const PiComposer = () => {
 
             return (
               <div
+                // biome-ignore lint/suspicious/noArrayIndexKey: Ignore
                 key={index}
                 className={`relative flex flex-col items-center justify-center p-1 rounded-md ${
                   isCurrentDigit ? "bg-primary text-primary-foreground" : "bg-muted"
@@ -395,9 +402,12 @@ const PiComposer = () => {
             <h2 className="text-lg font-medium mb-2">Composition Settings</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Number of Digits</label>
+                <Label htmlFor="num-digits" className="block text-sm font-medium mb-1">
+                  Number of Digits
+                </Label>
                 <div className="flex items-center gap-4">
                   <Slider
+                    id="num-digits"
                     value={[numDigits]}
                     min={10}
                     max={MAX_PI_DIGITS}
@@ -412,9 +422,11 @@ const PiComposer = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Key</label>
+                <Label htmlFor="key-select" className="block text-sm font-medium mb-1">
+                  Key
+                </Label>
                 <Select value={key} onValueChange={(value) => setKey(value)}>
-                  <SelectTrigger>
+                  <SelectTrigger id="key-select">
                     <SelectValue placeholder="Select key" />
                   </SelectTrigger>
                   <SelectContent>
@@ -428,12 +440,14 @@ const PiComposer = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Scale</label>
+                <Label htmlFor="scale-select" className="block text-sm font-medium mb-1">
+                  Scale
+                </Label>
                 <Select
                   value={scale}
                   onValueChange={(value) => setScale(value as "major" | "minor")}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="scale-select">
                     <SelectValue placeholder="Select scale" />
                   </SelectTrigger>
                   <SelectContent>
@@ -444,9 +458,12 @@ const PiComposer = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Tempo (BPM)</label>
+                <Label className="block text-sm font-medium mb-1" htmlFor="tempo-slider">
+                  Tempo (BPM)
+                </Label>
                 <div className="flex items-center gap-4">
                   <Slider
+                    id="tempo-slider"
                     value={[tempo]}
                     min={40}
                     max={240}
@@ -458,12 +475,14 @@ const PiComposer = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Waveform</label>
+                <Label htmlFor="waveform-select" className="block text-sm font-medium mb-1">
+                  Waveform
+                </Label>
                 <Select
                   value={waveform}
                   onValueChange={(value) => setWaveform(value as OscillatorType)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="waveform-select">
                     <SelectValue placeholder="Select wave form" />
                   </SelectTrigger>
                   <SelectContent>
@@ -481,16 +500,21 @@ const PiComposer = () => {
             <h2 className="text-lg font-medium mb-2">AI Enhancement</h2>
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
-                <Switch checked={useAI} onCheckedChange={setUseAI} />
-                <label className="text-sm font-medium">Enable AI Enhancement</label>
+                <Switch id="enable-ai" checked={useAI} onCheckedChange={setUseAI} />
+                <Label htmlFor="enable-ai" className="text-sm font-medium">
+                  Enable AI Enhancement
+                </Label>
               </div>
 
               {useAI && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Complexity</label>
+                    <Label htmlFor="complexity-slider" className="block text-sm font-medium mb-1">
+                      Complexity
+                    </Label>
                     <div className="flex items-center gap-4">
                       <Slider
+                        id="complexity-slider"
                         value={[complexity]}
                         min={0}
                         max={1}
@@ -502,9 +526,12 @@ const PiComposer = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">Variation</label>
+                    <Label htmlFor="variation-slider" className="block text-sm font-medium mb-1">
+                      Variation
+                    </Label>
                     <div className="flex items-center gap-4">
                       <Slider
+                        id="variation-slider"
                         value={[variation]}
                         min={0}
                         max={1}
@@ -516,8 +543,14 @@ const PiComposer = () => {
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    <Switch checked={useHarmony} onCheckedChange={setUseHarmony} />
-                    <label className="text-sm font-medium">Enable Harmonies</label>
+                    <Switch
+                      checked={useHarmony}
+                      onCheckedChange={setUseHarmony}
+                      id="enable-harmonies"
+                    />
+                    <Label className="text-sm font-medium" htmlFor="enable-harmonies">
+                      Enable Harmonies
+                    </Label>
                   </div>
                 </>
               )}
@@ -662,6 +695,7 @@ const PiComposer = () => {
                     <p>The AI has detected the following patterns in π&apos;s digits:</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {aiResult.patterns.map((pattern, idx) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: Ignore
                         <div key={idx} className="border rounded-md p-3">
                           <div className="font-medium">Pattern {idx + 1}</div>
                           <div className="text-sm text-muted-foreground">

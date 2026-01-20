@@ -101,7 +101,7 @@ function generateHarmonies(notes: string[]): string[][] {
   // Simple third harmony (add a note a third above in the scale)
   const thirdHarmony = notes.map((note) => {
     const noteName = note.slice(0, -1);
-    const octave = parseInt(note.slice(-1));
+    const octave = parseInt(note.slice(-1), 10);
 
     // This is a simplified approach - in a real app, you'd use music theory
     // to determine the correct third based on the scale
@@ -117,7 +117,7 @@ function generateHarmonies(notes: string[]): string[][] {
   // Simple fifth harmony
   const fifthHarmony = notes.map((note) => {
     const noteName = note.slice(0, -1);
-    const octave = parseInt(note.slice(-1));
+    const octave = parseInt(note.slice(-1), 10);
 
     const noteIndex = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"].indexOf(
       noteName
@@ -159,7 +159,7 @@ function enhanceMelody(notes: string[], patterns: Pattern[], variation: number):
             // Emphasize by raising octave
             const note = enhancedNotes[pos];
             const noteName = note.slice(0, -1);
-            const octave = parseInt(note.slice(-1));
+            const octave = parseInt(note.slice(-1), 10);
             enhancedNotes[pos] = `${noteName}${Math.min(octave + 1, 7)}`;
           }
         }
@@ -171,7 +171,7 @@ function enhanceMelody(notes: string[], patterns: Pattern[], variation: number):
             if (pos < enhancedNotes.length) {
               // Add slight emphasis by adjusting note duration (handled in playback)
               // Mark this by adding an asterisk that will be removed before playback
-              enhancedNotes[pos] = enhancedNotes[pos] + "*";
+              enhancedNotes[pos] = `${enhancedNotes[pos]}*`;
             }
           }
         }

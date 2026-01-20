@@ -1,6 +1,6 @@
 "use client";
 
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -10,6 +10,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent, Slider } from "./ui";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 // Define the interface for the ref methods
@@ -261,7 +262,7 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
         piGeometry.dispose();
         piMaterial.dispose();
       };
-    }, [color, size, initialRotationSpeed, rotationSpeed, isMobile, isPulsing, fpsInterval]);
+    }, [color, size, rotationSpeed, isMobile, isPulsing]);
 
     return (
       <>
@@ -286,11 +287,14 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
               <div className="space-y-2">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <label className="text-xs font-medium cursor-help">Model Color</label>
+                    <Label className="text-xs font-medium cursor-help" htmlFor="model-color">
+                      Model Color
+                    </Label>
                   </TooltipTrigger>
                   <TooltipContent>Change the color of the 3D Pi symbol</TooltipContent>
                 </Tooltip>
                 <Input
+                  id="model-color"
                   type="color"
                   value={color}
                   onChange={(e) => updateColor(e.target.value)}
@@ -301,13 +305,16 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
                 <div className="flex justify-between">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <label className="text-xs font-medium cursor-help">Model Size</label>
+                      <Label className="text-xs font-medium cursor-help" htmlFor="model-size">
+                        Model Size
+                      </Label>
                     </TooltipTrigger>
                     <TooltipContent>Adjust the size of the 3D Pi symbol</TooltipContent>
                   </Tooltip>
                   <span className="text-xs">{size.toFixed(1)}x</span>
                 </div>
                 <Slider
+                  id="model-size"
                   min={0.5}
                   max={2}
                   step={0.1}
@@ -320,13 +327,16 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
                 <div className="flex justify-between">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <label className="text-xs font-medium cursor-help">Rotation Speed</label>
+                      <Label className="text-xs font-medium cursor-help" htmlFor="rotation-speed">
+                        Rotation Speed
+                      </Label>
                     </TooltipTrigger>
                     <TooltipContent>Control how fast the Pi symbol rotates</TooltipContent>
                   </Tooltip>
                   <span className="text-xs">{(rotationSpeed * 100).toFixed(0)}%</span>
                 </div>
                 <Slider
+                  id="rotation-speed"
                   min={0}
                   max={0.02}
                   step={0.001}

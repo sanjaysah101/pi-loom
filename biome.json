@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -7,10 +7,11 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!node_modules", "!.next", "!dist", "!build"]
+    "includes": ["**", "!**/node_modules", "!**/dist", "!**/public", "!**/.next", "!**/content"]
   },
   "formatter": {
     "enabled": true,
+    "formatWithErrors": true,
     "indentStyle": "space",
     "indentWidth": 2,
     "lineWidth": 100,
@@ -18,6 +19,7 @@
   },
   "javascript": {
     "formatter": {
+      "enabled": true,
       "quoteStyle": "double",
       "jsxQuoteStyle": "double",
       "trailingCommas": "es5",
@@ -33,7 +35,10 @@
 
       "style": {
         "noNonNullAssertion": "warn",
-        "useConst": "error",
+        "useConst": {
+          "level": "error",
+          "fix": "unsafe"
+        },
         "useTemplate": "warn",
         "useImportType": "error",
         "useNodejsImportProtocol": "error"
@@ -42,13 +47,20 @@
       "suspicious": {
         "noUnknownAtRules": "off",
         "noExplicitAny": "warn",
-        "noArrayIndexKey": "warn"
+        "noArrayIndexKey": "warn",
+        "noVar": "error"
       },
 
       "correctness": {
         "useExhaustiveDependencies": "warn",
-        "noUnusedVariables": "error",
-        "noUnusedImports": "error"
+        "noUnusedVariables": {
+          "level": "error",
+          "fix": "none"
+        },
+        "noUnusedImports": {
+          "level": "error",
+          "fix": "unsafe"
+        }
       },
 
       "a11y": {
@@ -60,6 +72,11 @@
     "domains": {
       "next": "recommended",
       "react": "recommended"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "assist": {
