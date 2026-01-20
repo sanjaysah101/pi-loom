@@ -1,0 +1,103 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": ["**", "!**/node_modules", "!**/dist", "!**/public", "!**/.next", "!**/content"]
+  },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100,
+    "lineEnding": "lf"
+  },
+  "javascript": {
+    "formatter": {
+      "enabled": true,
+      "quoteStyle": "double",
+      "jsxQuoteStyle": "double",
+      "trailingCommas": "es5",
+      "arrowParentheses": "always",
+      "bracketSpacing": true,
+      "bracketSameLine": false
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+
+      "style": {
+        "noNonNullAssertion": "warn",
+        "useConst": {
+          "level": "error",
+          "fix": "unsafe"
+        },
+        "useTemplate": "warn",
+        "useImportType": "error",
+        "useNodejsImportProtocol": "error"
+      },
+
+      "suspicious": {
+        "noUnknownAtRules": "off",
+        "noExplicitAny": "warn",
+        "noArrayIndexKey": "warn",
+        "noVar": "error"
+      },
+
+      "correctness": {
+        "useExhaustiveDependencies": "warn",
+        "noUnusedVariables": {
+          "level": "error",
+          "fix": "none"
+        },
+        "noUnusedImports": {
+          "level": "error",
+          "fix": "unsafe"
+        }
+      },
+
+      "a11y": {
+        "noSvgWithoutTitle": "warn",
+        "useAltText": "error",
+        "useButtonType": "error"
+      }
+    },
+    "domains": {
+      "next": "recommended",
+      "react": "recommended"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": {
+          "level": "on",
+          "options": {
+            "groups": [
+              ["react", "react-dom", "react/**"],
+              ["next", "next/**"],
+              ":BLANK_LINE:",
+              [":PACKAGE:", ":PACKAGE_WITH_PROTOCOL:"],
+              ":BLANK_LINE:",
+              [":ALIAS:"],
+              ":BLANK_LINE:",
+              [":PATH:"]
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,16 +1,12 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { PiCanvas } from '@/components/PiCanvas';
+import Link from "next/link";
+
+import { motion } from "framer-motion";
+
+import { PiCanvas } from "@/components/PiCanvas";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const HomePage = () => {
   return (
@@ -27,7 +23,7 @@ const HomePage = () => {
             className="backdrop-blur-sm bg-background/30 p-8 rounded-xl shadow-lg border border-primary/10"
           >
             <motion.h1
-              className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600"
+              className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-linear-to-r from-blue-500 to-purple-600"
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               transition={{ duration: 1, delay: 0.2 }}
@@ -35,15 +31,11 @@ const HomePage = () => {
               Pi Loom
             </motion.h1>
             <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
-              An AI-powered music composer that transforms the digits of π into
-              harmonious musical patterns
+              An AI-powered music composer that transforms the digits of π into harmonious musical
+              patterns
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                asChild
-                size="lg"
-                className="px-8 shadow-lg hover:shadow-xl transition-all"
-              >
+              <Button asChild size="lg" className="px-8 shadow-lg hover:shadow-xl transition-all">
                 <Link href="/composer">Try the Composer</Link>
               </Button>
               <Button
@@ -76,15 +68,12 @@ const HomePage = () => {
           <motion.div whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
             <Card className="h-full border-primary/10 shadow-md hover:shadow-lg transition-all backdrop-blur-sm bg-background/30">
               <CardHeader>
-                <CardTitle className="text-primary">
-                  π-Based Composition
-                </CardTitle>
+                <CardTitle className="text-primary">π-Based Composition</CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-foreground/80">
-                  Converts π&apos;s digits into musical notes based on scales
-                  and keys, creating unique melodies from the mathematical
-                  constant.
+                  Converts π&apos;s digits into musical notes based on scales and keys, creating
+                  unique melodies from the mathematical constant.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -93,15 +82,12 @@ const HomePage = () => {
           <motion.div whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
             <Card className="h-full border-primary/10 shadow-md hover:shadow-lg transition-all backdrop-blur-sm bg-background/30">
               <CardHeader>
-                <CardTitle className="text-primary">
-                  AI Pattern Recognition
-                </CardTitle>
+                <CardTitle className="text-primary">AI Pattern Recognition</CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-foreground/80">
-                  Our AI detects and highlights patterns within π&apos;s
-                  sequence, enhancing the musical experience with intelligent
-                  composition.
+                  Our AI detects and highlights patterns within π&apos;s sequence, enhancing the
+                  musical experience with intelligent composition.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -110,14 +96,12 @@ const HomePage = () => {
           <motion.div whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
             <Card className="h-full border-primary/10 shadow-md hover:shadow-lg transition-all backdrop-blur-sm bg-background/30">
               <CardHeader>
-                <CardTitle className="text-primary">
-                  Interactive Visualization
-                </CardTitle>
+                <CardTitle className="text-primary">Interactive Visualization</CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-foreground/80">
-                  Visualize note frequencies and detected patterns in real-time
-                  as you explore the musical representation of π.
+                  Visualize note frequencies and detected patterns in real-time as you explore the
+                  musical representation of π.
                 </CardDescription>
               </CardContent>
             </Card>
