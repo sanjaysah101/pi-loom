@@ -6,8 +6,32 @@
     "source.fixAll.biome": "explicit"
   },
   "editor.formatOnSave": true,
-  "files.autoSave": "onFocusChange",
-  "cSpell.words": [
-    "Hackathon"
-  ]
+  "files.autoSave": "afterDelay",
+
+  // Explicitly set Biome as formatter for specific languages
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+
+  // Disable Prettier extension if installed
+  "prettier.enable": false,
+  "[css]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "cSpell.words": ["Hackathon"]
 }
