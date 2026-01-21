@@ -272,7 +272,7 @@ export const PiCanvas = forwardRef<PiCanvasRef, PiCanvasProps>(
         <Button
           variant="outline"
           size="sm"
-          className="fixed top-4 left-4 z-20 rounded-full w-8 h-8 p-0 backdrop-blur-sm bg-background/30"
+          className="fixed top-16 left-4 z-20 rounded-full w-8 h-8 p-0 backdrop-blur-sm bg-background/30"
           onClick={() => setShowControls(!showControls)}
         >
           <span className="sr-only">Toggle controls</span>

@@ -20,10 +20,6 @@ export const metadata: Metadata = {
   title: "PI Loom",
   description:
     "Pi Loom is an AI-powered music composer that transforms the digits of π into harmonious musical patterns",
-  icons: {
-    icon: "/pi-loom.svg",
-    apple: "/pi-loom.svg",
-  },
 };
 
 export default function RootLayout({
@@ -32,9 +28,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Suspense fallback={<div className="text-center text-2xl font-bold text-primary">Loading...</div>}>
+        <Suspense
+          fallback={<div className="text-center text-2xl font-bold text-primary">Loading...</div>}
+        >
           <Provider>{children}</Provider>
         </Suspense>
       </body>

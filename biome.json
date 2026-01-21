@@ -64,7 +64,7 @@
       },
 
       "a11y": {
-        "noSvgWithoutTitle": "warn",
+        "noSvgWithoutTitle": "error",
         "useAltText": "error",
         "useButtonType": "error"
       }
